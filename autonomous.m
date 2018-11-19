@@ -1,5 +1,7 @@
 
-initMaze();
+% square to square distance: 2' 1"
+
+% initMaze();
 setupEV3();
 solveMaze();
 
@@ -12,36 +14,6 @@ function setupEV3
     brick.GyroCalibrate(2);
     
     disp('robot set up');
-end
-
-function initMaze
-    disp('initializing maze');
-
-    global maze
-    global row
-    global column
-    global orientation
-
-    maze = zeros(3, 6);
-    disp(maze);
-
-%    row = input('Row: ');
-%    column = input('Column: ');
-%    orientation = input('Orientation: ', 's');
-
-    row = 3;
-    column = 1;
-    orientation = 'N';
-
-    maze(row, column) = 1;
-
-%    disp(maze);
-%    dirs = dirToEval(row, column);
-
-%    evalDirs(dirs, orientation)
-%    disp(isAtEnd(row, column));
-
-    disp('maze initialized');
 end
 
 function solveMaze
@@ -74,10 +46,6 @@ function solveMaze
             keyboardControl();
         else
             disp('oof, in algorithm');
-            disp(orientation');
-
-            dirs = dirsToEval(row, column);
-            evalDirs(dirs);
 
             complete = true;
         end
@@ -124,7 +92,18 @@ function keyboardControl
     disp('exiting keyboard control');
 end
 
-% turn functions
+% movement functions
+
+function driveStraight(distance)
+    global brick
+
+    disp('Moving forward')
+
+    brick.MoveMotor('AB', distance);
+    brick.WaitForMotor('AB');
+
+    disp('Finished moving forward')
+end
 
 function turnRight(degrees)
     global brick
@@ -165,17 +144,6 @@ function turnLeft(degrees)
     % update orientation, if we ever use this
     
     brick.StopAllMotors();
-end
-
-function updateOrientation(degrees)
-    global orientation
-    global directions
-    
-    wrap = degrees / 90;
-    position = find(directions==orientation);
-    repeat = ceil((wrap + position) / 4);
-    wrapped = repmat(directions, 1, repeat);
-    orientation = wrapped(position + wrap);
 end
 
 % pickup/dropoff

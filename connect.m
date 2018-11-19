@@ -1,8 +1,11 @@
+% disconnect
 % global brick
 % brick.DisconnectBrick('ENZO');
 
+% connect
 brick = ConnectBrick('ENZO');
 
-brick.MoveMotor('A', 50);
-pause(1); 
-brick.StopMotor('A');
+% connection test
+% brick.MoveMotor('A', 50);
+% pause(1); 
+% brick.StopMotor('A');
