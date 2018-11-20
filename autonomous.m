@@ -2,14 +2,18 @@
 setupEV3(brick);
 solveMaze(brick);
 
+% initial robot setup
+
 function setupEV3(brick)
     disp('setting up robot');
 
     brick.SetColorMode(3, 4); % RGB mode
     brick.GyroCalibrate(2);
-    
+
     disp('robot set up');
 end
+
+% maze solving algorithm
 
 function solveMaze(brick)
     disp('entering solveMaze');
@@ -32,7 +36,7 @@ function solveMaze(brick)
             complete = true;
         elseif blue >= green + red
             disp('in blue square');
-            keyboardControl();
+            keyboardControl(brick);
         end
     end
     disp('exiting solveMaze')
@@ -40,11 +44,10 @@ end
 
 % keyboard controls
 
-function keyboardControl
-    global brick
+function keyboardControl(brick)
     global key
 
-    disp('entering keyboard controls');
+    disp('entering keyboardControls');
     
     InitKeyboard();
 
@@ -75,6 +78,6 @@ function keyboardControl
     
     CloseKeyboard();
     
-    disp('exiting keyboard control');
+    disp('exiting keyboardControl');
 end
 
