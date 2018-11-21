@@ -7,7 +7,7 @@ InitKeyboard();
 
 % Sensor @ port 1 is color sensor
 % Sensor @ port 2 is gyroscope
-% Sensor @ port 3 is ultraviolet
+% Sensor @ port 3 is ultrasonic
 
 while 1
     pause(0.1);
