@@ -1,11 +1,9 @@
 
-initMaze();
-setupEV3();
-solveMaze();
+% initMaze();
+% setupEV3(brick);
+solveMaze(brick);
 
-function setupEV3
-    global brick
-
+function setupEV3(brick)
     disp('setting up robot');
 
     brick.SetColorMode(3, 4); % RGB mode
@@ -23,7 +21,7 @@ function initMaze
     global orientation
 
     maze = zeros(3, 6);
-    disp(maze);
+    maze
 
 %    row = input('Row: ');
 %    column = input('Column: ');
@@ -38,14 +36,13 @@ function initMaze
 %    disp(maze);
 %    dirs = dirToEval(row, column);
 
-%    evalDirs(dirs, orientation)
+%    evalDirs(brick, dirs, orientation)
 %    disp(isAtEnd(row, column));
 
     disp('maze initialized');
 end
 
-function solveMaze
-    global brick
+function solveMaze(brick)
     global maze
     global row
     global column
@@ -56,7 +53,7 @@ function solveMaze
     complete = false;
 
     while ~complete
-        color = getColor();
+        color = getColor(brick);
 
         red = color(1);
         green = color(2);
@@ -71,14 +68,13 @@ function solveMaze
             complete = true;
         elseif blue >= green + red
             disp('in blue square');
-            keyboardControl();
+            keyboardControl(brick);
         else
             disp('oof, in algorithm');
-            disp(orientation');
 
             dirs = dirsToEval(row, column);
-            evalDirs(dirs);
-
+            evalDirs(brick, orientation, dirs);
+            % getDist(brick)
             complete = true;
         end
     end
@@ -86,8 +82,7 @@ end
 
 % keyboard controls
 
-function keyboardControl
-    global brick
+function keyboardControl(brick)
     global key
 
     disp('entering keyboard controls');
@@ -126,12 +121,11 @@ end
 
 % turn functions
 
-function turnRight(degrees)
-    global brick
+function turnRight(brick, degrees)
     
     startAngle = brick.GyroAngle(2);
     disp('printing start angle');
-    disp(startAngle);
+    startAngle
     
     if ~isnan(startAngle)
         endAngle = startAngle + degrees;
@@ -150,9 +144,7 @@ function turnRight(degrees)
     end
 end
 
-function turnLeft(degrees)
-    global brick
-    
+function turnLeft(brick, degrees)
     startAngle = brick.GyroAngle(2);
     endAngle = startAngle - degrees;
     
@@ -180,30 +172,25 @@ end
 
 % pickup/dropoff
 
-function pickup
-    global brick
+function pickup(brick)
     brick.MoveMotorAngleRel('C', 30, 45, 'Brake');
 end
 
-function dropoff
-    global brick
+function dropoff(brick)
     brick.MoveMotorAngleRel('C', 30, -45, 'Brake');
 end
 
 % get sensor values
 
-function dist = getDist
-    global brick
+function dist = getDist(brick)
     dist = brick.UltrasonicDist(3);
 end
 
-function angle = getAngle
-    global brick
+function angle = getAngle(brick)
     angle = brick.GyroAngle(2);
 end
 
-function color = getColor
-    global brick
+function color = getColor(brick)
     color = brick.ColorRGB(1);
 end
 
@@ -233,21 +220,21 @@ function dirs = dirsToEval(row, column)
     dirs = directions;
 end
 
-function evalDirs(dirs)
-    global orientation
+function evalDirs(brick, orientation, dirs)
 
     if ismember(orientation, dirs)
-        disp(strcat("checking ", orientation));
-        disp(getDist());
+        orientation
+        disp('ultrasonic:')
+        getDist(brick)
         dirs(dirs==orientation) = [];
     end
     
     for dir=dirs
         degrees = toDeg(dir) - toDeg(orientation);
         disp('turning ');
-        disp(degrees);
-        turnRight(degrees);
-        disp(getDist());
+        degrees
+        turnRight(brick, degrees);
+        getDist(brick)
     end
 end
 

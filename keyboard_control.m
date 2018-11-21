@@ -1,13 +1,13 @@
 global key
 InitKeyboard();
 
-%Motor @ port A is the right motor
-%Motor @ port B is the left motor
-%Motor @ port C is wheelchair arm
+% Motor @ port A is the right motor
+% Motor @ port B is the left motor
+% Motor @ port C is wheelchair arm
 
-%Sensor @ port 1 is color sensor
-%Sensor @ port 2 is gyroscope
-%Sensor @ port 3 is ultraviolet
+% Sensor @ port 1 is color sensor
+% Sensor @ port 2 is gyroscope
+% Sensor @ port 3 is ultraviolet
 
 while 1
     pause(0.1);
