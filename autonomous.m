@@ -6,7 +6,7 @@ solveMaze(brick);
 function setupEV3(brick)
     disp('setting up robot');
 
-    brick.SetColorMode(3, 4); % RGB mode
+    brick.SetColorMode(3, 2);
 
     getColor(brick)
     getColor(brick)
@@ -50,28 +50,28 @@ function solveMaze(brick)
     wheelchair = false;
 
     while ~complete
-        
+    
+        % added this one line of code
+        getColor(brick);
+
         color = getColor(brick);
-        red = color(1);
-        green = color(2);
-        blue = color(3);
-        
-        red
-        green
-        blue
-        
-        if red > green + blue
+
+        if color == 5
            disp('in red square')
            pause(2);
-           
-       elseif ((green > red + blue) && wheelchair) 
+        elseif (color == 3 && wheelchair) 
            disp('in green square');
            disp('terminating solveMaze()');
+           
+           dropoff(brick)
+           dropoff(brick)
+
            complete = true;
-       elseif blue > green + red
+       elseif color == 2
            disp('in blue square');
            keyboardControl(brick);
-           orientation = input('Orientation: ', 's');
+           wheelchair = true;
+
            row = input('Row: ');
            column = input('Column: ');
            orientation = input('Orientation: ', 's');
@@ -256,7 +256,7 @@ function dist = getDist(brick)
 end
 
 function color = getColor(brick)
-    color = brick.ColorRGB(1);
+    color = brick.ColorCode(1);
 end
 
 % maze functions
@@ -308,11 +308,11 @@ function maxDir = getMaxDir(dirs, valueset)
     keyset = dirs;
     map = containers.Map(cellstr(keyset')', valueset);
 
-    disp('keyset')
-    keyset
+%    disp('keyset')
+%    keyset
 
-    disp('valueset')
-    valueset
+%    disp('valueset')
+%    valueset
 
     
     k = keys(map);

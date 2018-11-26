@@ -1,7 +1,7 @@
 % global brick
 % brick.DisconnectBrick('ENZO');
 
-brick = ConnectBrick('ENZO');
+brick = ConnectBrick('EV3');
 
 brick.MoveMotor('A', 50);
 pause(1); 

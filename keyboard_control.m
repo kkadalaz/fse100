@@ -27,6 +27,8 @@ while 1
             brick.MoveMotorAngleRel('C', 30, -45, 'Brake');
         case 'q'
             brick.StopAllMotors();
+        case 'space'
+            brick.beep();
     end
 end
 
