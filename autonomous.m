@@ -7,13 +7,12 @@ function setupEV3(brick)
     disp('setting up robot');
 
     brick.SetColorMode(3, 4); % RGB mode
-    brick.GyroCalibrate(2);
 
+    getColor(brick)
+    getColor(brick)
     getDist(brick)
     getDist(brick)
-    getAngle(brick)
-    getAngle(brick)
-    
+
     disp('robot set up');
 end
 
@@ -27,26 +26,18 @@ function initMaze
 
     maze = zeros(3, 6);
 
-%    row = input('Row: ');
-%    column = input('Column: ');
-%    orientation = input('Orientation: ', 's');
+    row = input('Row: ');
+    column = input('Column: ');
+    orientation = input('Orientation: ', 's');
 
-    row = 3;
-    column = 1;
-    orientation = 'N';
 
-    maze(row, column) = 1;
-
-%    disp(maze);
-%    dirs = dirToEval(row, column);
-
-%    getMaxDir(brick, dirs, orientation)
-%    disp(isAtEnd(row, column));
+%    maze(row, column) = 1;
 
     disp('maze initialized');
 end
 
 function solveMaze(brick)
+    global maze
     global row
     global column
     global orientation
@@ -54,35 +45,122 @@ function solveMaze(brick)
     disp('solving maze');
     
     complete = false;
+    directionArray = [];
+    iterations = 0;
+    wheelchair = false;
 
     while ~complete
+        
         color = getColor(brick);
-
         red = color(1);
         green = color(2);
         blue = color(3);
+        
+        red
+        green
+        blue
+        
+        if red > green + blue
+           disp('in red square')
+           pause(2);
+           
+       elseif ((green > red + blue) && wheelchair) 
+           disp('in green square');
+           disp('terminating solveMaze()');
+           complete = true;
+       elseif blue > green + red
+           disp('in blue square');
+           keyboardControl(brick);
+           orientation = input('Orientation: ', 's');
+           row = input('Row: ');
+           column = input('Column: ');
+           orientation = input('Orientation: ', 's');
+        else
 
- %       if red >= green + blue
- %           disp('in red square');
- %           pause(2);
- %       elseif green >= red + blue
- %           disp('in green square');
- %           disp('terminating solveMaze()');
- %           complete = true;
- %       elseif blue >= green + red
- %           disp('in blue square');
- %           keyboardControl(brick);
- %       else
-            disp('oof, in algorithm');
+            disp('evaluating directions');
+            dirs = dirsToEval(row, column, maze);
+            values = getValues(brick, dirs);
+            disp('done evaluating directions');
+            disp('distances');
 
-            dirs = dirsToEval(row, column);
-            maxDir = getMaxDir(brick, dirs);
-            degrees = resolveOrientation(maxDir, orientation)
-            turnRight(brick, degrees);
-            driveStraight(brick);
-            
+            values
+
+            maze
+
+            if(isempty(values) || isempty(values(values > 35)))
+                disp('backtracking');
+                backtracking = true;
+                while(backtracking)
+
+                   % find and remove direction
+                   disp('last direction traversed');
+                   dir = directionArray(end)
+                   directionArray(end) = [];
+
+                   % switch direction
+                   if(dir == "N")
+                    dir = "S";
+                   elseif (dir == "S")
+                    dir = "N";
+                   elseif (dir == "E")
+                    dir = "W";
+                   elseif (dir == "W")
+                    dir = "E";
+                   end
+
+                   % go backwards
+                   degrees = resolveOrientation(dir, orientation);
+                   turnRight(brick, degrees);
+                   driveStraight(brick);
+                   maze(row, column) = 1;
+                   updateRowCol(dir)
+
+                   % search for adjacent unvisited cells
+                   disp('dirs to evaluate');
+                   dirs = dirsToEval(row, column, maze)
+                   disp('distances');
+                   values = getValues(brick, dirs)
+
+                   % if there is an adjacent unvisted cell and it is not a
+                   % wall
+                   if(~isempty(values) && ~isempty(values(values > 35)))
+                       disp('adjacent unvisited cell');
+
+                       maxDir = getMaxDir(dirs, values);
+                       degrees = resolveOrientation(maxDir, orientation);
+                       turnRight(brick, degrees); 
+                       driveStraight(brick);
+                       maze(row, column) = 1;
+                       directionArray = [directionArray, maxDir];
+                       updateRowCol(maxDir);
+
+                       disp('done backtracking');
+                       backtracking = false;
+                   end               
+                end
+            else
+                disp('not backtracking');
+
+                maxDir = getMaxDir(dirs, values);
+                disp('maxDir');
+                maxDir
+
+                degrees = resolveOrientation(maxDir, orientation);
+                turnRight(brick, degrees); 
+                driveStraight(brick);
+
+                % make sure to update Row/Col variable/DirectionArray/visitedCells
+                maze(row, column) = 1;
+                directionArray = [directionArray, maxDir];
+                updateRowCol(maxDir);
+        end            
+        end
+        % test end condition
+        iterations = iterations + 1;
+        if(iterations == 100)
             complete = true;
- %       end
+        end
+        
     end
 end
 
@@ -128,7 +206,9 @@ end
 % turn functions
 
 function driveStraight(brick)
-    brick.MoveMotorAngleRel('AB', 50, 360, 'Coast');
+    brick.StopAllMotors('Brake');
+    pause(1);
+    brick.MoveMotorAngleRel('AB', 75, 1080, 'Coast');
     brick.WaitForMotor('AB');
 end
 
@@ -141,8 +221,8 @@ function turnRight(brick, degrees)
     brick.MoveMotorAngleRel('B', 30, turn, 'Coast');
     brick.WaitForMotor('AB');
 
-    disp('diffAngle')
-    brick.GyroAngle(2) - startAngle
+%    disp('diffAngle')
+%    brick.GyroAngle(2) - startAngle
     
     updateOrientation(degrees);
 end
@@ -175,10 +255,6 @@ function dist = getDist(brick)
     dist = brick.UltrasonicDist(3);
 end
 
-function angle = getAngle(brick)
-    angle = brick.GyroAngle(2);
-end
-
 function color = getColor(brick)
     color = brick.ColorRGB(1);
 end
@@ -189,61 +265,106 @@ function atEnd = isAtEnd(row, column)
     atEnd = (row == 1 || row == 3) && (column == 1 && column == 7);
 end
 
-function dirs = dirsToEval(row, column)
-%    directions = {'N', 'E', 'S', 'W'};
-%    directions = ['N', 'E', 'S', 'W'];
+function dirs = dirsToEval(row, column, maze)
     directions = 'NESW';
 
     if row == 1
         directions(directions=='N') = [];
-    elseif row == 3
+    else
+        if maze(row - 1, column) == 1
+            directions(directions=='N') = [];
+        end
+    end
+            
+    if row == 3
         directions(directions=='S') = [];
+    else
+        if maze(row + 1, column) == 1
+            directions(directions=='S') = [];
+        end
     end
     
     if column == 1
         directions(directions=='W') = [];
-    elseif column == 6
+    else
+        if maze(row, column - 1) == 1
+            directions(directions=='W') = [];
+        end
+    end
+    
+    if column == 6
         directions(directions=='E') = [];
+    else
+        if maze(row, column + 1) == 1
+            directions(directions=='E') = [];
+        end
     end
     
     dirs = directions;
 end
 
-function maxDir = getMaxDir(brick, dirs)
-    global orientation
+function maxDir = getMaxDir(dirs, valueset)
 
     keyset = dirs;
-    valueset = [];
-
-    if ismember(orientation, dirs)
-        valueset = [valueset, getDist(brick) ];
-        dirs(dirs==orientation) = [];
-    end
-    
-    for dir=dirs
-        disp('in evalDirs');
-        
-        degrees = toDeg(dir) - toDeg(orientation);
-        disp('turning');
-        degrees
-        turnRight(brick, degrees);
-        valueset = [valueset, getDist(brick) ];
-    end
- 
-    valueset
-    
     map = containers.Map(cellstr(keyset')', valueset);
 
+    disp('keyset')
+    keyset
+
+    disp('valueset')
+    valueset
+
+    
     k = keys(map);
     v = values(map);
 
     value = max(valueset);
     index = cellfun(@(x)isequal(x, value), v);
-    maxDir = char(k(index))
+    maxDir = char(k(index));
+end
+
+
+function values = getValues(brick, dirs)
+    global orientation
+    valueset = [];
+    
+    if (~isempty(dirs))
+%        if ismember(orientation, dirs)
+%            valueset = [valueset, getDist(brick) ];
+%            dirs(dirs==orientation) = [];
+%        end
+
+        for dir=dirs
+%            disp('in evalDirs');
+
+            degrees = toDeg(dir) - toDeg(orientation);
+%            disp('turning');
+%            degrees
+            turnRight(brick, degrees);
+            valueset = [valueset, getDist(brick)];
+        end
+    end
+ 
+    values = valueset;
 end
 
 function degrees = resolveOrientation(dir, nextDir)
     degrees = toDeg(dir) - toDeg(nextDir);
+end
+
+function updateRowCol(dir)
+    global row
+    global column
+    
+    if(dir == "N")
+        row = row - 1;
+    elseif (dir == "S")
+        row = row + 1;
+    elseif (dir == "E")
+        column = column + 1;
+    elseif (dir == "W")
+        column = column - 1;
+    end
 end
 
 function deg = toDeg(dir)
@@ -256,5 +377,8 @@ function deg = toDeg(dir)
             deg = 180;
         case 'W'
             deg = 270;
+        otherwise
+            disp('in toDeg. printing input');
+            deg
     end
 end

@@ -6,7 +6,6 @@ InitKeyboard();
 % Motor @ port C is wheelchair arm
 
 % Sensor @ port 1 is color sensor
-% Sensor @ port 2 is gyroscope
 % Sensor @ port 3 is ultrasonic
 
 while 1
